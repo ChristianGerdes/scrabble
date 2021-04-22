@@ -7,13 +7,11 @@
     <Company>IT University of Copenhagen</Company>
     
     <Version>1.0.0</Version>
-    <PackageId>YourIdGoesHere</PackageId>
-    <AssemblyName>YourIdGoesHere</AssemblyName>
-    <Authors>Your names go here (optional since this is hosted in a public Github repository)</Authors>
-    <Product>The bot name goes here</Product>
-    <Description>Scrabble Bot for Functional Programming 2021
-
-Group name: &lt;Your group name goes here&gt; (optional since this is hosted in a public Github repository)</Description>
+    <PackageId>BiggerBrains</PackageId>
+    <AssemblyName>BiggerBrains</AssemblyName>
+    <Authors>Christian Gerdes, Lars Rasmussen og Tobias Svendsen</Authors>
+    <Product>BiggerBrainBot</Product>
+    <Description>BiggerBrainBot for Functional Programming 2021</Description>
   </PropertyGroup>
 
   <ItemGroup>
