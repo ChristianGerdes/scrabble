@@ -24,76 +24,58 @@ module internal Bot =
 
         let tileToChar tile : char = fst (Set.minElement tile)
         let tileToPoint tile : int = snd (Set.minElement tile)
+        let idToChar id : char = (tileToChar (findTile id))
+        let idToPoint id : char = (tileToPoint (findTile id))
 
-        // [1, 2, 3]
-        //["H", "E", "J"]
 
-        // [(0, 0), "H"]
-        // [(1, 0), "E"]
-        // [(2, 0), "J"]
+        let currentHand (hand : MultiSet.MultiSet<uint32>) (moves: list<(int * int) * (uint32 * (char * int))>) =
+            subtract hand (ofList (List.map (fun (x,y) -> (fst y)) moves))
 
-        // [(0, 0), "H"]
-        // [(0, 0), "E"]
-        // [(0, 0), "J"]
+        let rec aux (hand: MultiSet<uint32>) (dict: Dict) (moves: list<(int * int) * (uint32 * (char * int))>) (validMoves: list<(int * int) * (uint32 * (char * int))>) =
+            // (printfn "Hand %A - moves %A" ((List.map (fun f -> tileToChar (findTile f)) (toList hand))) moves)
+            (printfn "moves %A" moves)
+            (printfn "Current hand %A" ((List.map (fun f -> tileToChar (findTile f)) (toList (currentHand st.hand moves)))))
 
-        let rec aux (hand: MultiSet<uint32>) (dict: Dict) (acc: list<(int * int) * (uint32 * (char * int))>) =
-            let test = hand |> fold (fun _ x i ->
-                                printf "%A" (tileToChar (findTile i))
-                            ) ()
+            // let test = List.fold (fun acc i -> [i] @ acc) [] [1; 2; 3]
 
-            printf "\n\n"
+            // printf "%A" test
 
-            match (toList hand) with
-            | [] -> acc
-            | head::tail ->
-                match (step (tileToChar (findTile head)) dict) with
-                | None -> acc
+            // [B, C, U, K]
+            // B -> [C, U, K]
+            // C, U -> [C, K]
+            // C -> [K]
+            // K -> [], acc = [(0, 0) 11, ("K", 5)]
+
+            List.fold (fun (acc: list<(int * int) * (uint32 * (char * int))>) id ->
+                match (step (tileToChar (findTile id)) dict) with
+                | None ->
+                    acc
+                    // (printfn "No match. %A - Tile: %A - Hand: %A" (tileToChar (findTile id)) (findTile id) (removeSingle id hand))
+                    // aux (removeSingle id hand) dict acc
                 | Some (b, d) when b ->
-                    (acc @ [((acc.Length, 0), (head, ((tileToChar (findTile head)), (tileToPoint (findTile head)))))])
+                    // (printfn "Found valid word. Hand: %A\n" hand)
+                    moves @ [((0, 0), (id, ((tileToChar (findTile id)), (tileToPoint (findTile id)))))]
+                    // acc @ [((0, 0), (id, ((tileToChar (findTile id)), (tileToPoint (findTile id)))))]
                 | Some (b, d) ->
-                    aux (ofList tail) d (acc @ [((acc.Length, 0), (head, ((tileToChar (findTile head)), (tileToPoint (findTile head)))))])
+                    // acc
+                    // (printfn "Found invalid word. Char: %A\n" (tileToChar (findTile id)))
+                    // (moves @ (aux (currentHand st.hand moves) d moves))
+                    let acc1 = moves @ [((0, 0), (id, ((tileToChar (findTile id)), (tileToPoint (findTile id)))))]
 
-        // let rec aux (hand: MultiSet<uint32>) (dict: Dict) (acc: list<(int * int) * (uint32 * (char * int))>) =
-        //     match (toList hand) with
-        //     | [] -> acc
-        //     | head::tail ->
-        //         match (step (tileToChar (findTile head)) dict) with
-        //         | None -> acc
-        //         | Some (b, d) when b ->
-        //             (acc @ [((acc.Length, 0), (head, ((tileToChar (findTile head)), (tileToPoint (findTile head)))))])
-        //         | Some (b, d) ->
-        //             aux (ofList tail) d (acc @ [((acc.Length, 0), (head, ((tileToChar (findTile head)), (tileToPoint (findTile head)))))])
 
-        // [1, 2, 3] [4, 5] => [1, 2, 3, 4, 5]
-        // [1, 2, 3] [4, 5] => [1, 2, 3, [4, 5]]
+                    let output = aux (removeSingle id hand) d acc1 acc
+                    printf "OUTPUT: %A\n" output
 
-        // [1, 2, 3]
-        // [2, 3]
-        // [3]
-        // [2, 1, 3]
-        // [1, 3]
+                    output
+            ) validMoves (toList hand)
 
-        // let rec aux (hand: MultiSet<uint32>) (dict: Dict) (acc: list<(int * int) * (uint32 * (char * int))>) =
-        //     // (printfn "Hand %A - Acc %A" ((List.map (fun f -> tileToChar (findTile f)) (toList hand))) acc)
-        // // multiset.fold
-        //     match (toList hand) with
-        //     | [] -> acc
-        //     | head::tail ->
-        //         match (step (tileToChar (findTile head)) dict) with
-        //         | None -> acc
-        //         | Some (b, d) when b ->
-        //             // (printfn "Found word ending %A %A" acc (tileToChar (findTile head)))
+        aux st.hand st.dict [] []
 
-        //             let move = ((acc.Length, 0), (head, ((tileToChar (findTile head)), (tileToPoint (findTile head)))))
-
-        //             (acc @ [move])
-        //         | Some (b, d) ->
-        //             // (printfn "Going deeper %A" (tileToChar (findTile head)))
-
-        //             let move = ((acc.Length, 0), (head, ((tileToChar (findTile head)), (tileToPoint (findTile head)))))
-
-        //             aux (ofList tail) d (acc @ [move])
-
-        aux st.hand st.dict []
-
+            //Look at first letter
+            // if letter exists in dict:
+                // Found and valid  (bool = true):
+                    // Append letter to acc -> word is done
+                // Found not valid (bool = false):
+                    // Recursive call aux with currentHand (full hand - acc), nested dict, and acc with appended letter
+            // else:
 

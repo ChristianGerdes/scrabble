@@ -18,8 +18,8 @@
 
         let (|>>) (p : Parser<'a>) (f : 'a -> 'b) : Parser<'b> = p |>> f
 
-        let (<|>)  (p : Parser<'a>) q : Parser<'a> = attempt p <|> q 
-        let choice (ps : Parser<'a> seq) : Parser<'a> = choice (Seq.map attempt ps) 
+        let (<|>)  (p : Parser<'a>) q : Parser<'a> = attempt p <|> q
+        let choice (ps : Parser<'a> seq) : Parser<'a> = choice (Seq.map attempt ps)
 
         let many  (p : Parser<'a>) : Parser<'a list> = many p
         let many1 (p : Parser<'a>) : Parser<'a list> = many1 p
