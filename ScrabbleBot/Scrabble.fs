@@ -16,11 +16,11 @@ module RegEx =
         else None
 
     let parseMove ts =
-        let pattern = @"([-]?[0-9]+[ ])([-]?[0-9]+[ ])([0-9]+)([A-Z]{1})([0-9]+)[ ]?" 
+        let pattern = @"([-]?[0-9]+[ ])([-]?[0-9]+[ ])([0-9]+)([A-Z]{1})([0-9]+)[ ]?"
         Regex.Matches(ts, pattern) |>
-        Seq.cast<Match> |> 
-        Seq.map 
-            (fun t -> 
+        Seq.cast<Match> |>
+        Seq.map
+            (fun t ->
                 match t.Value with
                 | Regex pattern [x; y; id; c; p] ->
                     ((x |> int, y |> int), (id |> uint32, (c |> char, p |> int)))
@@ -41,11 +41,13 @@ module Scrabble =
         let rec aux (st : State.state) =
             Print.printHand pieces (State.hand st)
 
+            let generated = Bot.generateMove st pieces
+            debugPrint (sprintf "Generated move %A\n" generated)
+
             // remove the force print when you move on from manual input (or when you have learnt the format)
             forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
             let input =  System.Console.ReadLine()
             let move = RegEx.parseMove input
-
 
 
             debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
@@ -55,40 +57,41 @@ module Scrabble =
             debugPrint (sprintf "Player %d <- Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
 
             match msg with
-            | RCM (CMPlaySuccess(ms, points, newPieces)) ->
-                (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
-                let newHand = State.updateHand st.hand ms newPieces
-                let newGameState = State.updateGameState ms st.gameState //update to gamestate
-                let st' = State.mkState st.board st.dict st.playerNumber newHand newGameState    // This state needs to be updated
-                
+                | RCM (CMPlaySuccess(ms, points, newPieces)) ->
+                    (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
+                    let newHand = State.updateHand st.hand ms newPieces
+                    let newGameState = State.updateGameState ms st.gameState //update to gamestate
+                    let st' = State.mkState st.board st.dict st.playerNumber newHand newGameState    // This state needs to be updated
 
-                aux st'
-            | RCM (CMPlayed (pid, ms, points)) ->
-                (* Successful play by other player. Update your state *)
-                let st' = st // This state needs to be updated
-                aux st'
-            | RCM (CMPlayFailed (pid, ms)) ->
-                (* Failed play. Update your state *)
-                let st' = st // This state needs to be updated
-                aux st'
-            | RCM (CMGameOver _) -> ()
-            | RCM a -> failwith (sprintf "not implmented: %A" a)
-            | RGPE err -> printfn "Gameplay Error:\n%A" err; aux st
+                    aux st'
+                | RCM (CMPlayed (pid, ms, points)) ->
+                    debugPrint (sprintf "Player %d <- Made play" (State.playerNumber st))
+                    (* Successful play by other player. Update your state *)
+                    let st' = st // This state needs to be updated
+                    aux st'
+                | RCM (CMPlayFailed (pid, ms)) ->
+                    debugPrint (sprintf "Player %d <- Failed" (State.playerNumber st))
+                    (* Failed play. Update your state *)
+                    let st' = st // This state needs to be updated
+                    aux st'
+                | RCM (CMGameOver _) -> ()
+                | RCM a -> failwith (sprintf "not implmented: %A" a)
+                | RGPE err -> printfn "Gameplay Error:\n%A" err; aux st
 
 
         aux st
 
-    let startGame 
-            (boardP : boardProg) 
-            (dictf : bool -> Dictionary.Dict) 
-            (numPlayers : uint32) 
-            (playerNumber : uint32) 
-            (playerTurn  : uint32) 
+    let startGame
+            (boardP : boardProg)
+            (dictf : bool -> Dictionary.Dict)
+            (numPlayers : uint32)
+            (playerNumber : uint32)
+            (playerTurn  : uint32)
             (hand : (uint32 * uint32) list)
             (tiles : Map<uint32, tile>)
-            (timeout : uint32 option) 
+            (timeout : uint32 option)
             (cstream : Stream) =
-        debugPrint 
+        debugPrint
             (sprintf "Starting game!
                       number of players = %d
                       player id = %d
@@ -99,8 +102,7 @@ module Scrabble =
         //let dict = dictf true // Uncomment if using a gaddag for your dictionary
         let dict = dictf false // Uncomment if using a trie for your dictionary
         let board = Parser.parseBoardProg boardP
-                  
+
         let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty hand
 
         fun () -> playGame cstream tiles (State.mkState board dict playerNumber handSet Map.empty)
-        

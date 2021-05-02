@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RepositoryUrl>https://github.com/jesper-bengtson/Scrabble-FP2021/</RepositoryUrl>
     <TargetFramework>net5.0</TargetFramework>
@@ -25,6 +25,7 @@
     <Compile Include="Parser.fsi" />
     <Compile Include="Parser.fs" />
     <Compile Include="State.fs" />
+    <Compile Include="Bot.fs" />
     <Compile Include="Scrabble.fsi" />
     <Compile Include="Scrabble.fs" />
   </ItemGroup>
