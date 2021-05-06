@@ -108,6 +108,8 @@ module Scrabble =
         // [K, C, B, U]
         let customHand: ((uint32 * uint32) list) = [(11u, 1u); (3u, 1u); (2u, 1u); (21u, 1u)]
         let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty customHand
+
+
         // let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty hand
 
 
