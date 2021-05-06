@@ -49,7 +49,8 @@ module Scrabble =
             // remove the force print when you move on from manual input (or when you have learnt the format)
             // forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
             let input =  System.Console.ReadLine()
-            // let move = RegEx.parseMove input
+            let move = RegEx.parseMove input
+            
 
 
             debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
@@ -106,11 +107,11 @@ module Scrabble =
         let board = Parser.parseBoardProg boardP
 
         // [K, C, B, U]
-        let customHand: ((uint32 * uint32) list) = [(11u, 1u); (3u, 1u); (2u, 1u); (21u, 1u)]
-        let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty customHand
+        // let customHand: ((uint32 * uint32) list) = [(11u, 1u); (3u, 1u); (2u, 1u); (21u, 1u)]
+        // let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty customHand
 
 
-        // let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty hand
+        let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty hand
 
 
         fun () -> playGame cstream tiles (State.mkState board dict playerNumber handSet Map.empty)
