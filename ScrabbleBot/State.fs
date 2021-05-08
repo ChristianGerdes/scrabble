@@ -36,6 +36,13 @@ module internal State =
         let newBricks = List.map (fun m -> fst m) newPcs |> ofList
         //Union
         let finalHand = union updatedHand newBricks
+
+        printfn "used: %A\n" used
+        printfn "updatedhand: %A\n" updatedHand
+        printfn "new bricks: %A\n" newBricks
+        printfn "final hand: %A\n" finalHand
+        printfn "Old hand: %A\n" hand
+
         finalHand
 
     let updateGameState (moves: list<coord * (uint32 * (char * int))>) (previousState: Map<coord, (char * int)>) =

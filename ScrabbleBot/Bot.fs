@@ -51,11 +51,20 @@ module internal Bot =
                   (state.board.center, Direction.down) ]
             | x -> x
 
+        let isValidMove (x, y) char direction =
+            true
+            // let candidates = [(x-1, y); (x+1, y); (x, y-1); (x, y+1)]
+
+
+            // match ((isCoordInUse (x-1, y)), (isCoordInUse (x+1, y)), (isCoordInUse (x, y-1)), (isCoordInUse (x, y+1))) with
+            // | (false, false, false, false) -> true
+            // | _ -> true
+
         let rec findMove (dict: Dict) hand (currentPoint, currentDirection) (moves: Move) bestMove =
             match (Map.tryFind currentPoint state.gameState) with
             | Some (char, pointValue) ->
                 match (step char dict) with
-                | Some (b, d) when b -> moves
+                | Some (b, d) when b && moves.Length > 0 -> moves
                 | Some (b, d) ->
                     findMove d hand ((moveInDirection currentDirection currentPoint), currentDirection) moves bestMove
                 | None -> moves
@@ -64,17 +73,22 @@ module internal Bot =
                     (fun acc id _ ->
                         let (char, pv) = idToTile id |> Set.minElement
 
-                        match (step char dict) with
-                        | Some (b, d) when b -> (currentPoint, (id, (char, pv))) :: moves
-                        | Some (b, d) ->
-                            // printfn "%A %A %A" currentPoint currentDirection (moveInDirection currentDirection currentPoint)
-                            findMove
-                                d
-                                (removeSingle id hand)
-                                ((moveInDirection currentDirection currentPoint), currentDirection)
-                                ((currentPoint, (id, (char, pv))) :: moves)
-                                acc
-                        | None -> bestMove)
+                        // Insert check function
+                        match (isValidMove currentPoint char currentDirection) with
+                        | true -> match (step char dict) with
+                                    | Some (b, d) ->
+                                        if b && not (isCoordInUse (moveInDirection currentDirection currentPoint)) then
+                                            (currentPoint, (id, (char, pv))) :: moves
+                                        else
+                                            findMove
+                                                d
+                                                (removeSingle id hand)
+                                                ((moveInDirection currentDirection currentPoint), currentDirection)
+                                                ((currentPoint, (id, (char, pv))) :: moves)
+                                                acc
+                                    | _ -> bestMove
+                        | false -> acc
+                    )
                     moves
                     hand
 

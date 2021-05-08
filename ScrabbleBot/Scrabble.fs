@@ -67,6 +67,9 @@ module Scrabble =
                 | RCM (CMPlaySuccess(ms, points, newPieces)) ->
                     (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
                     let newHand = State.updateHand st.hand ms newPieces
+
+                    printfn "%A\n" newHand
+
                     let newGameState = State.updateGameState ms st.gameState //update to gamestate
                     let st' = State.mkState st.board st.dict st.playerNumber newHand newGameState    // This state needs to be updated
 
