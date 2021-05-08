@@ -2,7 +2,7 @@ namespace BiggerBrainBot
 open MultiSet
 
 
-module internal State = 
+module internal State =
     // Make sure to keep your state localised in this module. It makes your life a whole lot easier.
     // Currently, it only keeps track of your hand, your player numer, your board, and your dictionary,
     // but it could, potentially, keep track of other useful
@@ -30,16 +30,16 @@ module internal State =
     // [1, A], [2, A], [8, U]
     // [(0, 0) (1 (A, 5))] => [1]
 
-    let updateHand (hand: MultiSet<uint32>) (moves: list<coord * (uint32 * (char * int))>) (newPcs: list<uint32 * uint32>) = 
+    let updateHand (hand: MultiSet<uint32>) (moves: list<coord * (uint32 * (char * int))>) (newPcs: list<uint32 * uint32>) =
         //Remove old tiles from hand
         let used = List.map (fun m -> fst (snd m)) moves |> ofList
-        let updatedHand = subtract hand used 
+        let updatedHand = subtract hand used
         // Add newPcs
         let newBricks = List.map (fun m -> fst m) newPcs |> ofList
         //Union
         let finalHand = union updatedHand newBricks
         finalHand
 
-    // let updateGameState (moves: list<coord * (uint32 * (char * int))>) (previousState: Map<coord, (uint32 * (char * int))>) =
-    let updateGameState moves previousState =
-        List.fold (fun a b -> Map.add (fst b) (snd b) a) previousState moves
+    let updateGameState (moves: list<coord * (uint32 * (char * int))>) (previousState: Map<coord, (char * int)>) =
+    // let updateGameState moves previousState =
+        List.fold (fun a b -> Map.add (fst b) (snd (snd b)) a) previousState moves
