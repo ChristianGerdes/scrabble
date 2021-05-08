@@ -14,7 +14,7 @@ module internal State =
         dict          : ScrabbleUtil.Dictionary.Dict
         playerNumber  : uint32
         hand          : MultiSet.MultiSet<uint32>
-        gameState     : Map<coord, (uint32 * (char * int))>
+        gameState     : Map<coord, (char * int)>
     }
 
 
