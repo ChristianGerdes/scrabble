@@ -51,7 +51,6 @@ module internal Bot =
                   (state.board.center, Direction.down) ]
             | x -> x
 
-
         let rec findMove (dict: Dict) hand (currentPoint, currentDirection) (moves: Move) bestMove =
             match (Map.tryFind currentPoint state.gameState) with
             | Some (char, pointValue) ->
@@ -73,12 +72,18 @@ module internal Bot =
                                 d
                                 (removeSingle id hand)
                                 ((moveInDirection currentDirection currentPoint), currentDirection)
-                                ((currentPoint, (id, (char, pv))) :: moves) acc
-                        | None -> acc)
+                                ((currentPoint, (id, (char, pv))) :: moves)
+                                acc
+                        | None -> bestMove)
                     moves
                     hand
 
         let move =
-            List.fold (fun acc anchorPoint -> findMove state.dict state.hand anchorPoint [] acc) [] anchorPoints
+            List.fold
+                (fun acc anchorPoint ->
+                    printf "%A\n" anchorPoint
+                    findMove state.dict state.hand anchorPoint [] acc)
+                []
+                anchorPoints
 
         move

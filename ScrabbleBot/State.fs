@@ -27,8 +27,6 @@ module internal State =
     let hand st          = st.hand
     let gameState st     = st.gameState
 
-    // [1, A], [2, A], [8, U]
-    // [(0, 0) (1 (A, 5))] => [1]
 
     let updateHand (hand: MultiSet<uint32>) (moves: list<coord * (uint32 * (char * int))>) (newPcs: list<uint32 * uint32>) =
         //Remove old tiles from hand

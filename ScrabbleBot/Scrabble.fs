@@ -47,21 +47,21 @@ module Scrabble =
             // let move = Bot.generateMove st pieces
             // debugPrint (sprintf "Generated move %A\n" move)
 
-            let temp = generateMove st pieces
-            debugPrint (sprintf "Generated temp %A\n" temp)
 
             // remove the force print when you move on from manual input (or when you have learnt the format)
             // forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
             let input =  System.Console.ReadLine()
-            let move = RegEx.parseMove input
+            // let move1 = RegEx.parseMove input
+
+            let move = generateMove st pieces
+            debugPrint (sprintf "Generated move %A\n" move)
 
 
-
-            debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
+            // debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
             send cstream (SMPlay move)
 
             let msg = recv cstream
-            debugPrint (sprintf "Player %d <- Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
+            // debugPrint (sprintf "Player %d <- Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
 
             match msg with
                 | RCM (CMPlaySuccess(ms, points, newPieces)) ->
@@ -72,12 +72,12 @@ module Scrabble =
 
                     aux st'
                 | RCM (CMPlayed (pid, ms, points)) ->
-                    debugPrint (sprintf "Player %d <- Made play" (State.playerNumber st))
+                    // debugPrint (sprintf "Player %d <- Made play" (State.playerNumber st))
                     (* Successful play by other player. Update your state *)
                     let st' = st // This state needs to be updated
                     aux st'
                 | RCM (CMPlayFailed (pid, ms)) ->
-                    debugPrint (sprintf "Player %d <- Failed" (State.playerNumber st))
+                    // debugPrint (sprintf "Player %d <- Failed" (State.playerNumber st))
                     (* Failed play. Update your state *)
                     let st' = st // This state needs to be updated
                     aux st'
