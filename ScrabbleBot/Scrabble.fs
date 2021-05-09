@@ -50,11 +50,11 @@ module Scrabble =
 
             // remove the force print when you move on from manual input (or when you have learnt the format)
             // forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
-            let input =  System.Console.ReadLine()
+            // let input =  System.Console.ReadLine()
             // let move1 = RegEx.parseMove input
 
             let move = generateMove st pieces
-            debugPrint (sprintf "Generated move %A\n" move)
+            // debugPrint (sprintf "Generated move %A\n" move)
 
 
             // debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
@@ -67,8 +67,6 @@ module Scrabble =
                 | RCM (CMPlaySuccess(ms, points, newPieces)) ->
                     (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
                     let newHand = State.updateHand st.hand ms newPieces
-
-                    printfn "%A\n" newHand
 
                     let newGameState = State.updateGameState ms st.gameState //update to gamestate
                     let st' = State.mkState st.board st.dict st.playerNumber newHand newGameState    // This state needs to be updated

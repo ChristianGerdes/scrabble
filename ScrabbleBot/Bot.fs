@@ -47,18 +47,53 @@ module internal Bot =
                 (Map.toList state.gameState)
             |> function
             | [] ->
-                [ (state.board.center, Direction.right)
-                  (state.board.center, Direction.down) ]
+                let (x, y) = state.board.center
+
+                [ ((x - 1, y), Direction.right)
+                  ((x, y - 1), Direction.down)
+                  (state.board.center, Direction.right)
+                  (state.board.center, Direction.down)
+                ]
             | x -> x
 
-        let isValidMove (x, y) char direction =
-            true
-            // let candidates = [(x-1, y); (x+1, y); (x, y-1); (x, y+1)]
+        let rec findEdge (x, y) direction =
+            match direction with
+            | Direction.right when isCoordInUse (x, y - 1) -> findEdge (x, y - 1) direction
+            | Direction.down when isCoordInUse (x - 1, y) -> findEdge (x - 1, y) direction
+            | _ -> (x, y)
 
+        let coordToChar coord coordToValidate charToValidate =
+            match coord with
+            | c when c = coordToValidate -> charToValidate
+            | _ ->
+                match Map.tryFind coord state.gameState with
+                | Some v -> fst v
+                | None -> failwith "No char at tile"
 
-            // match ((isCoordInUse (x-1, y)), (isCoordInUse (x+1, y)), (isCoordInUse (x, y-1)), (isCoordInUse (x, y+1))) with
-            // | (false, false, false, false) -> true
-            // | _ -> true
+        let isValidateCoordInUse coord coordToValidate =
+            match coord with
+            | c when c = coordToValidate -> true
+            | _ -> isCoordInUse coord
+
+        let rec isValidMove (dict: Dict) (x, y) validateCoord char direction =
+            match direction with
+            | Direction.right ->
+                match (step (coordToChar (x, y) validateCoord char) dict) with
+                | Some (b, d) when isValidateCoordInUse (x, y + 1) validateCoord ->
+                    isValidMove d (x, y + 1) validateCoord char direction
+                | Some (b, d) when
+                    b
+                    && not (isValidateCoordInUse (x, y + 1) validateCoord) -> true
+                | _ -> state.gameState.IsEmpty
+            | Direction.down ->
+                match (step (coordToChar (x, y) validateCoord char) dict) with
+                | Some (b, d) when isValidateCoordInUse (x + 1, y) validateCoord ->
+                    isValidMove d (x + 1, y) validateCoord char direction
+                | Some (b, d) when
+                    b
+                    && not (isValidateCoordInUse (x + 1, y) validateCoord) -> true
+                | _ -> state.gameState.IsEmpty
+            | _ -> failwith "HAHA"
 
         let rec findMove (dict: Dict) hand (currentPoint, currentDirection) (moves: Move) bestMove =
             match (Map.tryFind currentPoint state.gameState) with
@@ -73,29 +108,34 @@ module internal Bot =
                     (fun acc id _ ->
                         let (char, pv) = idToTile id |> Set.minElement
 
+                        let edge = findEdge currentPoint currentDirection
+
                         // Insert check function
-                        match (isValidMove currentPoint char currentDirection) with
-                        | true -> match (step char dict) with
-                                    | Some (b, d) ->
-                                        if b && not (isCoordInUse (moveInDirection currentDirection currentPoint)) then
-                                            (currentPoint, (id, (char, pv))) :: moves
-                                        else
-                                            findMove
-                                                d
-                                                (removeSingle id hand)
-                                                ((moveInDirection currentDirection currentPoint), currentDirection)
-                                                ((currentPoint, (id, (char, pv))) :: moves)
-                                                acc
-                                    | _ -> bestMove
-                        | false -> acc
-                    )
+                        match (isValidMove dict edge currentPoint char currentDirection) with
+                        | true ->
+                            match (step char dict) with
+                            | Some (b, d) ->
+                                if
+                                    b
+                                    && not (isCoordInUse (moveInDirection currentDirection currentPoint))
+                                then
+                                    (currentPoint, (id, (char, pv))) :: moves
+                                else
+                                    findMove
+                                        d
+                                        (removeSingle id hand)
+                                        ((moveInDirection currentDirection currentPoint), currentDirection)
+                                        ((currentPoint, (id, (char, pv))) :: moves)
+                                        acc
+                            | _ -> bestMove
+                        | false -> acc)
                     moves
                     hand
 
         let move =
             List.fold
                 (fun acc anchorPoint ->
-                    printf "%A\n" anchorPoint
+                    // printf "%A\n" anchorPoint
                     findMove state.dict state.hand anchorPoint [] acc)
                 []
                 anchorPoints
