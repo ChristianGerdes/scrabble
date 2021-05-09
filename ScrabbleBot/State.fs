@@ -27,23 +27,12 @@ module internal State =
     let hand st          = st.hand
     let gameState st     = st.gameState
 
-
     let updateHand (hand: MultiSet<uint32>) (moves: list<coord * (uint32 * (char * int))>) (newPcs: list<uint32 * uint32>) =
-        //Remove old tiles from hand
         let used = List.map (fun m -> fst (snd m)) moves |> ofList
+
         let updatedHand = subtract hand used
-        // Add newPcs
-        let newBricks = List.map (fun m -> fst m) newPcs |> ofList
-        //Union
-        let finalHand = union updatedHand newBricks
 
-        printfn "used: %A\n" used
-        printfn "updatedhand: %A\n" updatedHand
-        printfn "new bricks: %A\n" newBricks
-        printfn "final hand: %A\n" finalHand
-        printfn "Old hand: %A\n" hand
-
-        finalHand
+        List.fold (fun acc (id, count) -> add id count acc) updatedHand newPcs
 
     let updateGameState (moves: list<coord * (uint32 * (char * int))>) (previousState: Map<coord, (char * int)>) =
     // let updateGameState moves previousState =
