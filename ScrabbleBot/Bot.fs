@@ -76,6 +76,7 @@ module internal Bot =
             | _ -> isCoordInUse coord
 
         let rec isValidMove (dict: Dict) (x, y) validateCoord char direction =
+            match state.bo
             match direction with
             | Direction.right ->
                 match (step (coordToChar (x, y) validateCoord char) dict) with
@@ -93,7 +94,7 @@ module internal Bot =
                     b
                     && not (isValidateCoordInUse (x + 1, y) validateCoord) -> true
                 | _ -> state.gameState.IsEmpty
-            | _ -> failwith "HAHA"
+            | _ -> failwith "not implemented"
 
         let rec findMove (dict: Dict) hand (currentPoint, currentDirection) (moves: Move) bestMove =
             match (Map.tryFind currentPoint state.gameState) with
@@ -139,5 +140,8 @@ module internal Bot =
                     findMove state.dict state.hand anchorPoint [] acc)
                 []
                 anchorPoints
-
         move
+
+        // match move.IsEmpty with
+        // | true -> //
+        // | false -> move

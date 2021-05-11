@@ -42,23 +42,29 @@ module Scrabble =
         let rec aux (st : State.state) =
             Print.printHand pieces (State.hand st)
 
-
-
             // let move = Bot.generateMove st pieces
             // debugPrint (sprintf "Generated move %A\n" move)
 
 
             // remove the force print when you move on from manual input (or when you have learnt the format)
             // forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
-            // let input =  System.Console.ReadLine()
+            let input =  System.Console.ReadLine()
             // let move1 = RegEx.parseMove input
 
-            let move = generateMove st pieces
+            let move = generateMove st pieces 
             // debugPrint (sprintf "Generated move %A\n" move)
 
+            // let changeTiles = 
+            //     let toRemove = MultiSet.fold (fun acc id count -> [id] @ acc) [] st.hand 
+            //     let toKeep = MultiSet.subtract toRemove st.hand 
 
             // debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
-            send cstream (SMPlay move)
+            // (MultiSet.fold (fun acc id count -> [id] @ acc) [] st.hand ) (MultiSet.fold (fun acc (id, count) -> (MultiSet.add id count acc |> MultiSet.toList) [] st.hand))
+            match move.IsEmpty with
+            | true ->   send cstream (SMChange (st.hand |> MultiSet.toList))
+                        printf "changed tiles"
+            | false ->  send cstream (SMPlay move)
+
 
             let msg = recv cstream
             // debugPrint (sprintf "Player %d <- Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
@@ -67,10 +73,14 @@ module Scrabble =
                 | RCM (CMPlaySuccess(ms, points, newPieces)) ->
                     (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
                     let newHand = State.updateHand st.hand ms newPieces
-
                     let newGameState = State.updateGameState ms st.gameState //update to gamestate
                     let st' = State.mkState st.board st.dict st.playerNumber newHand newGameState    // This state needs to be updated
 
+                    aux st'
+                | RCM (CMChangeSuccess(newTiles)) -> 
+                    let newHand = State.updateHand MultiSet.empty [] newTiles
+
+                    let st' = State.mkState st.board st.dict st.playerNumber newHand st.gameState   
                     aux st'
                 | RCM (CMPlayed (pid, ms, points)) ->
                     // debugPrint (sprintf "Player %d <- Made play" (State.playerNumber st))

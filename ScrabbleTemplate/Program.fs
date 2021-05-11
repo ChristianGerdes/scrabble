@@ -47,7 +47,8 @@ let main argv =
     let port       = 13001
 
     // let players = spawnMultiples "OxyphenButazone" Oxyphenbutazone.Scrabble.startGame 2
-    let players = spawnMultiples "BiggerBrainBot" BiggerBrainBot.Scrabble.startGame 2
+    // let players = spawnMultiples "BiggerBrainBot" BiggerBrainBot.Scrabble.startGame 2
+    let players = [("BiggerBrainBot", BiggerBrainBot.Scrabble.startGame)]
     // Uncomment this line to call your client
     // let players    = [("BiggerBrainBot", BiggerBrainBot.Scrabble.startGame); ("OxyphenButazone", Oxyphenbutazone.Scrabble.startGame)]
     let (dictionary, time) =
