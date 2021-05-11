@@ -52,8 +52,7 @@ module internal Bot =
                 [ ((x - 1, y), Direction.right)
                   ((x, y - 1), Direction.down)
                   (state.board.center, Direction.right)
-                  (state.board.center, Direction.down)
-                ]
+                  (state.board.center, Direction.down) ]
             | x -> x
 
         let rec findEdge (x, y) direction =
@@ -76,25 +75,27 @@ module internal Bot =
             | _ -> isCoordInUse coord
 
         let rec isValidMove (dict: Dict) (x, y) validateCoord char direction =
-            match state.bo
-            match direction with
-            | Direction.right ->
-                match (step (coordToChar (x, y) validateCoord char) dict) with
-                | Some (b, d) when isValidateCoordInUse (x, y + 1) validateCoord ->
-                    isValidMove d (x, y + 1) validateCoord char direction
-                | Some (b, d) when
-                    b
-                    && not (isValidateCoordInUse (x, y + 1) validateCoord) -> true
-                | _ -> state.gameState.IsEmpty
-            | Direction.down ->
-                match (step (coordToChar (x, y) validateCoord char) dict) with
-                | Some (b, d) when isValidateCoordInUse (x + 1, y) validateCoord ->
-                    isValidMove d (x + 1, y) validateCoord char direction
-                | Some (b, d) when
-                    b
-                    && not (isValidateCoordInUse (x + 1, y) validateCoord) -> true
-                | _ -> state.gameState.IsEmpty
-            | _ -> failwith "not implemented"
+            match state.board.squares (x, y) with
+            | Some _ ->
+                match direction with
+                | Direction.right ->
+                    match (step (coordToChar (x, y) validateCoord char) dict) with
+                    | Some (b, d) when isValidateCoordInUse (x, y + 1) validateCoord ->
+                        isValidMove d (x, y + 1) validateCoord char direction
+                    | Some (b, d) when
+                        b
+                        && not (isValidateCoordInUse (x, y + 1) validateCoord) -> true
+                    | _ -> state.gameState.IsEmpty
+                | Direction.down ->
+                    match (step (coordToChar (x, y) validateCoord char) dict) with
+                    | Some (b, d) when isValidateCoordInUse (x + 1, y) validateCoord ->
+                        isValidMove d (x + 1, y) validateCoord char direction
+                    | Some (b, d) when
+                        b
+                        && not (isValidateCoordInUse (x + 1, y) validateCoord) -> true
+                    | _ -> state.gameState.IsEmpty
+                | _ -> failwith "not implemented"
+            | None -> false
 
         let rec findMove (dict: Dict) hand (currentPoint, currentDirection) (moves: Move) bestMove =
             match (Map.tryFind currentPoint state.gameState) with
@@ -133,15 +134,4 @@ module internal Bot =
                     moves
                     hand
 
-        let move =
-            List.fold
-                (fun acc anchorPoint ->
-                    // printf "%A\n" anchorPoint
-                    findMove state.dict state.hand anchorPoint [] acc)
-                []
-                anchorPoints
-        move
-
-        // match move.IsEmpty with
-        // | true -> //
-        // | false -> move
+        List.fold (fun acc anchorPoint -> findMove state.dict state.hand anchorPoint [] acc) [] anchorPoints
