@@ -48,7 +48,7 @@ module Scrabble =
 
             // remove the force print when you move on from manual input (or when you have learnt the format)
             // forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
-            let input =  System.Console.ReadLine()
+            // let input =  System.Console.ReadLine()
             // let move1 = RegEx.parseMove input
 
             let move = generateMove st pieces 
