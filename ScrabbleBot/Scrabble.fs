@@ -54,12 +54,7 @@ module Scrabble =
             let move = generateMove st pieces 
             // debugPrint (sprintf "Generated move %A\n" move)
 
-            // let changeTiles = 
-            //     let toRemove = MultiSet.fold (fun acc id count -> [id] @ acc) [] st.hand 
-            //     let toKeep = MultiSet.subtract toRemove st.hand 
-
             // debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
-            // (MultiSet.fold (fun acc id count -> [id] @ acc) [] st.hand ) (MultiSet.fold (fun acc (id, count) -> (MultiSet.add id count acc |> MultiSet.toList) [] st.hand))
             match move.IsEmpty with
             | true ->   send cstream (SMChange (st.hand |> MultiSet.toList))
                         printf "changed tiles"

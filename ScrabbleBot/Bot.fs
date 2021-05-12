@@ -35,7 +35,7 @@ module internal Bot =
             | None -> false
 
         let rec backtrace count ((x, y), direction) acc =
-            match (size state.hand) > count with
+            match 3u > count with
             | false -> acc
             | true ->
                 match direction with
@@ -113,6 +113,7 @@ module internal Bot =
             | c when c = coordToValidate -> true
             | _ -> isCoordInUse coord
 
+        
         let rec isValidMove (dict: Dict) (x, y) validateCoord char direction =
             match state.board.squares (x, y) with
             | Some _ ->
@@ -161,6 +162,10 @@ module internal Bot =
                                     && not (isCoordInUse (moveInDirection currentDirection currentPoint))
                                 then
                                     (currentPoint, (id, (char, pv))) :: moves
+                                    
+                                    // match bestMove with
+                                    // | _ when currentMove.Length <= (List.length bestMove) -> bestMove
+                                    // | _ -> currentMove
                                 else
                                     findMove
                                         d
@@ -170,12 +175,12 @@ module internal Bot =
                                         acc
                             | _ -> bestMove
                         | false -> acc)
-                    moves
+                    bestMove
                     hand
 
         List.fold
             (fun acc anchorPoint ->
-                printf "%A\n" anchorPoint
+                // printf "%A\n" anchorPoint
                 findMove state.dict state.hand anchorPoint [] acc)
             []
             anchorPoints
