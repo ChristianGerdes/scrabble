@@ -43,7 +43,6 @@ module internal Dictionary
                 | None -> false
         go (List.ofSeq s) dict
 
-
     // Only implement reverse if you have made a Gaddag
     let reverse : Dict -> (bool * Dict) option = fun _ -> failwith "Not implemented"
 

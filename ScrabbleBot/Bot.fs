@@ -141,7 +141,7 @@ module internal Bot =
                     gatherChars (x + 1, y) writeDirection coordToValidate charToValidate newAcc
                 else
                     newAcc
-            | _ -> []
+            | _ -> acc
 
         let isValidMove coord =
             if (state.gameState.IsEmpty) then
@@ -154,42 +154,63 @@ module internal Bot =
         let isAdjacentWordValid word dict =
             match String.length word with
             | 1 -> true
-            | _ -> lookup word dict
+            | _ -> Dictionary.lookup word dict
+
+        let isTileConnected (x, y) =
+            if (isCoordInUse (x-1, y)) then
+                true
+            else
+            ()
+
+            if (isCoordInUse (x+1, y)) then
+                true
+            else
+            ()
+
+            if (isCoordInUse (x, y-1)) then
+                true
+            else
+            ()
+
+            if (isCoordInUse (x, y+1)) then
+                true
+            else
+            ()
+
+            false
+
+        let rec isConnected play =
+            List.fold (fun acc (coord, _) ->
+                            if (isTileConnected coord) then
+                                true
+                            else
+                                acc
+                        ) state.gameState.IsEmpty play
 
         let rec findMove (dict: Dict) hand (currentPoint, currentDirection) (play: Move) (validPlays : list<Move>) =
 
-
-
             match (Map.tryFind currentPoint state.gameState) with
             | Some (char, pointValue) ->
-                //refactor
-
-             
-              
                 match (step char dict) with
-                | Some (b, d) when b && play.Length > 0 -> play :: validPlays
+                | Some (b, d) when b && play.Length > 0 && not (isCoordInUse (moveInDirection currentDirection currentPoint)) -> play :: validPlays
                 | Some (b, d) ->
-                    // let edge = findEdge currentPoint currentDirection
-                    // let charList = gatherChars edge currentDirection currentPoint char []
-                    // let word = System.String.Concat(charList)
-
-                    // printfn "word: %A" word
-                    // match (isAdjacentWordValid word state.dict) with
-                    // | true ->
-                        
                     findMove d hand ((moveInDirection currentDirection currentPoint), currentDirection) play validPlays
-                    // | false -> validPlays
                 | None -> validPlays
-
             | None ->
                 fold
                     (fun acc id _ ->
                         let (char, pv) = idToTile id |> Set.minElement
                         let edge = findEdge currentPoint currentDirection
-                        let charList =
-                            gatherChars edge currentDirection currentPoint char []
-                        
-                        let word = System.String.Concat(charList)
+                        let charList = gatherChars edge currentDirection currentPoint char []
+
+                        let mutated = match currentDirection with
+                                        | Direction.right -> List.rev charList
+                                        | _ -> List.rev charList
+
+                        //reverse word
+                        let word = System.String.Concat(mutated)
+                        let wtf = play
+                        let dir = currentDirection
 
                         match isValidMove currentPoint with
                         | true ->
@@ -201,12 +222,10 @@ module internal Bot =
                                         b
                                         && not (isCoordInUse (moveInDirection currentDirection currentPoint))
                                     then
-                                        ((currentPoint, (id, (char, pv))) :: play) :: validPlays
-                                        // let currentPlay = (currentPoint, (id, (char, pv))) :: play
-
-                                        // match currentPlay with
-                                        // | _ when currentPlay.Length <= bestPlay.Length -> bestPlay
-                                        // | _ -> currentPlay
+                                        if (isConnected ((currentPoint, (id, (char, pv))) :: play)) then
+                                            ((currentPoint, (id, (char, pv))) :: play) :: validPlays
+                                        else
+                                            acc
                                     else
                                         findMove
                                             d
@@ -220,13 +239,13 @@ module internal Bot =
                     validPlays
                     hand
         // [play1, play2, ]
-        let plays = List.fold (fun acc anchorPoint -> findMove state.dict state.hand anchorPoint [] acc) [] anchorPoints 
-        
-        let playScore move = 
+        let plays = List.fold (fun acc anchorPoint -> findMove state.dict state.hand anchorPoint [] acc) [] anchorPoints
+
+        let playScore move =
             List.fold( fun acc (coord, (id, (char, pointValue))) -> acc + pointValue) 0 move
-            
+
             // type Move = list<(coord * (uint32 * (char * int)))>
-        let bestPlay = List.fold (fun acc currentPlay -> 
+        let bestPlay = List.fold (fun acc currentPlay ->
                                         match playScore currentPlay with
                                         | x when x > playScore acc -> currentPlay
                                         | _ -> acc
