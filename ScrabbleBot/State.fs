@@ -12,12 +12,14 @@ module internal State =
     type state = {
         board         : Parser.board
         dict          : ScrabbleUtil.Dictionary.Dict
-        playerNumber  : uint32
         hand          : MultiSet.MultiSet<uint32>
         gameState     : Map<coord, (char * int)>
+        numPlayers    : uint32
+        playerNumber  : uint32
+        playerTurn    : uint32
     }
 
-    let mkState b d pn h gs = {board = b; dict = d;  playerNumber = pn; hand = h ; gameState = gs}
+    let mkState board dict hand gameState numPlayers playerNumber playerTurn = {board = board; dict = dict; playerNumber = playerNumber; hand = hand ; gameState = gameState; numPlayers = numPlayers; playerTurn = playerTurn}
 
     let board st         = st.board
     let dict st          = st.dict

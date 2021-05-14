@@ -51,15 +51,19 @@ module Scrabble =
             // let input =  System.Console.ReadLine()
             // let move1 = RegEx.parseMove input
 
-            let move = generateMove st pieces 
-            // debugPrint (sprintf "Generated move %A\n" move)
+            if (st.playerTurn = st.playerNumber) then
+                let move = generateMove st pieces
+                // debugPrint (sprintf "Generated move %A\n" move)
 
-            // debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
-            match move.IsEmpty with
-            | true ->   send cstream (SMChange (st.hand |> MultiSet.toList))
-                        printf "changed tiles"
-            | false ->  send cstream (SMPlay move)
+                // debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
+                match move.IsEmpty with
+                | true ->   send cstream (SMChange (st.hand |> MultiSet.toList))
+                            printf "changed tiles"
+                | false ->  send cstream (SMPlay move)
 
+            let shiftTurn = match st.playerTurn + 1u with
+                            | x when x > st.numPlayers -> 1u
+                            | x -> x
 
             let msg = recv cstream
             // debugPrint (sprintf "Player %d <- Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
@@ -69,18 +73,20 @@ module Scrabble =
                     (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
                     let newHand = State.updateHand st.hand ms newPieces
                     let newGameState = State.updateGameState ms st.gameState //update to gamestate
-                    let st' = State.mkState st.board st.dict st.playerNumber newHand newGameState    // This state needs to be updated
+                    let st' = State.mkState st.board st.dict newHand newGameState st.numPlayers st.playerNumber shiftTurn   // This state needs to be updated
 
                     aux st'
-                | RCM (CMChangeSuccess(newTiles)) -> 
+                | RCM (CMChangeSuccess(newTiles)) ->
                     let newHand = State.updateHand MultiSet.empty [] newTiles
 
-                    let st' = State.mkState st.board st.dict st.playerNumber newHand st.gameState   
+                    let st' = State.mkState st.board st.dict newHand st.gameState st.numPlayers st.playerNumber shiftTurn
                     aux st'
                 | RCM (CMPlayed (pid, ms, points)) ->
                     // debugPrint (sprintf "Player %d <- Made play" (State.playerNumber st))
                     (* Successful play by other player. Update your state *)
-                    let st' = st // This state needs to be updated
+                    let newGameState = State.updateGameState ms st.gameState
+                    let st' = State.mkState st.board st.dict st.hand newGameState st.numPlayers st.playerNumber shiftTurn
+                    // let st' = st // This state needs to be updated
                     aux st'
                 | RCM (CMPlayFailed (pid, ms)) ->
                     // debugPrint (sprintf "Player %d <- Failed" (State.playerNumber st))
@@ -127,4 +133,4 @@ module Scrabble =
         let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty hand
 
 
-        fun () -> playGame cstream tiles (State.mkState board dict playerNumber handSet Map.empty)
+        fun () -> playGame cstream tiles (State.mkState board dict handSet Map.empty numPlayers playerNumber playerTurn)
