@@ -17,8 +17,6 @@ module internal State =
         gameState     : Map<coord, (char * int)>
     }
 
-
-
     let mkState b d pn h gs = {board = b; dict = d;  playerNumber = pn; hand = h ; gameState = gs}
 
     let board st         = st.board
