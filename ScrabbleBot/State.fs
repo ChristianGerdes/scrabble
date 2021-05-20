@@ -14,12 +14,11 @@ module internal State =
         dict          : ScrabbleUtil.Dictionary.Dict
         hand          : MultiSet.MultiSet<uint32>
         gameState     : Map<coord, (char * int)>
-        numPlayers    : uint32
+        players       : List<uint32>
         playerNumber  : uint32
-        playerTurn    : uint32
     }
 
-    let mkState board dict hand gameState numPlayers playerNumber playerTurn = {board = board; dict = dict; playerNumber = playerNumber; hand = hand ; gameState = gameState; numPlayers = numPlayers; playerTurn = playerTurn}
+    let mkState board dict hand gameState players playerNumber = {board = board; dict = dict; playerNumber = playerNumber; hand = hand ; gameState = gameState; players = players}
 
     let board st         = st.board
     let dict st          = st.dict
@@ -35,5 +34,4 @@ module internal State =
         List.fold (fun acc (id, count) -> add id count acc) updatedHand newPcs
 
     let updateGameState (moves: list<coord * (uint32 * (char * int))>) (previousState: Map<coord, (char * int)>) =
-    // let updateGameState moves previousState =
         List.fold (fun a b -> Map.add (fst b) (snd (snd b)) a) previousState moves

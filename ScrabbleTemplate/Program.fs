@@ -26,7 +26,6 @@ let main argv =
     System.Console.ForegroundColor <- System.ConsoleColor.Black
     System.Console.Clear()
 
-
     let board        = ScrabbleUtil.StandardBoard.standardBoard ()
     // let board      = ScrabbleUtil.InfiniteBoard.infiniteBoard ()
 
@@ -49,15 +48,14 @@ let main argv =
 
     // let players = spawnMultiples "OxyphenButazone" Oxyphenbutazone.Scrabble.startGame 2
     // let players = spawnMultiples "BiggerBrainBot" BiggerBrainBot.Scrabble.startGame 2
-    let players = [("BiggerBrainBot", BiggerBrainBot.Scrabble.startGame)]
     // Uncomment this line to call your client
-    // let players    = [("BiggerBrainBot", BiggerBrainBot.Scrabble.startGame); ("OxyphenButazone", Oxyphenbutazone.Scrabble.startGame)]
+    let players    = [("BiggerBrainBot", BiggerBrainBot.Scrabble.startGame); ("OxyphenButazone", Oxyphenbutazone.Scrabble.startGame)]
     let (dictionary, time) =
         time (fun () -> ScrabbleUtil.Dictionary.mkDict
                             Dictionary.empty
                             Dictionary.insert
                             Dictionary.step
-//                            (Some Dictionary.reverse) // Use if you have implemented a Gaddag
+                        //    (Some Dictionary.reverse) // Use if you have implemented a Gaddag
                             None                        // Use if you have not implemented a Gaddag
                             words)
 

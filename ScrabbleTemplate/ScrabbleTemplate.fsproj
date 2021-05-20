@@ -18,9 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Oxyphenbutazone" Version="1.0.6" />
-    <PackageReference Include="ScrabbleServer" Version="1.0.7" />
-    <PackageReference Include="TerminatorOX" Version="1.0.1" />
+    <PackageReference Include="Oxyphenbutazone" Version="1.0.9" />
+    <PackageReference Include="ScrabbleServer" Version="1.0.12" />
+    <PackageReference Include="TerminatorOX" Version="1.2.0" />
+    <PackageReference Include="FuuuuuuuBot" Version="1.0.5" />
+    <PackageReference Include="FkingGood" Version="3.0.0" />
+    <PackageReference Include="nbryn" Version="1.1.4" />
   </ItemGroup>
 
   <ItemGroup>

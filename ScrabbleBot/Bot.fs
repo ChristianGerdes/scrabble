@@ -1,17 +1,14 @@
 namespace BiggerBrainBot
 
 open ScrabbleUtil.Dictionary
-open ScrabbleUtil.DebugPrint
 
 module internal Bot =
     open MultiSet
     open ScrabbleUtil
 
     type Direction =
-        | up = 0
-        | right = 1
-        | down = 2
-        | left = 3
+        | right = 0
+        | down = 1
 
     type Move = list<(coord * (uint32 * (char * int)))>
 
@@ -20,9 +17,7 @@ module internal Bot =
             match direction with
             | Direction.down -> (x, y + 1)
             | Direction.right -> (x + 1, y)
-            | Direction.up -> (x, y - 1)
-            | Direction.left -> (x - 1, y)
-            | _ -> failwith "not implemented yet"
+            | _ -> (x,y)
 
         let idToTile id =
             match Map.tryFind id tiles with
@@ -40,9 +35,7 @@ module internal Bot =
             | _ -> isCoordInUse coord
 
         let rec backtrace count ((x, y), direction) acc =
-            // printfn "Backtracing"
-
-            match MultiSet.size state.hand > count with
+            match size state.hand > count with
             | false -> acc
             | true ->
                 match direction with
@@ -53,30 +46,19 @@ module internal Bot =
                     && not (isCoordInUse (x - 2, y)) ->
                     let newAcc = ((x - 1, y), Direction.right) :: acc
 
-                    // printfn "X %A" count
-
                     backtrace (count + 1u) ((x - 1, y), Direction.right) newAcc
                 | Direction.down when
                     not (isCoordInUse (x, y - 1))
                     && not (isCoordInUse (x, y - 2)) ->
                     let newAcc = ((x, y - 1), Direction.down) :: acc
 
-                    // printfn "Y %A" count
-
                     backtrace (count + 1u) ((x, y - 1), Direction.down) newAcc
                 | _ -> acc
 
         let anchorPoints =
-            // List.fold () acc list
             let letters =
                 List.collect
                     (fun ((x, y), _) ->
-                        // match ((isCoordInUse (x, y - 1)), (isCoordInUse (x, y - 2))) with
-                        // | (false, false) ->
-                        //     [ ((x, y-1), Direction.down)
-                        //       ((x, y-2), Direction.down) ]
-                        // | _ -> []
-
                         match ((isCoordInUse (x, y - 1)), (isCoordInUse (x - 1, y))) with
                         | (true, true) -> []
                         | (true, false) -> [ ((x, y), Direction.right) ]
@@ -135,7 +117,6 @@ module internal Bot =
                     newAcc
             | _ -> acc
 
-
         let isValidMove coord =
             if (state.gameState.IsEmpty) then
                 true
@@ -147,7 +128,7 @@ module internal Bot =
         let isAdjacentWordValid word dict =
             match String.length word with
             | 1 -> true
-            | _ -> Dictionary.lookup word dict
+            | _ -> lookup word dict
 
         let isTileConnected (x, y) =
             if (isCoordInUse (x - 1, y)) then
@@ -228,52 +209,10 @@ module internal Bot =
         let playScore move =
             List.fold (fun acc (coord, (id, (char, pointValue))) -> acc + pointValue) 0 move
 
-    
-        let res =
-            List.fold
-                (fun acc currentPlay ->
-                    match playScore currentPlay with
-                    | x when x > playScore acc -> currentPlay
-                    | _ -> acc)
-                []
-                plays
-
-
-        // let extractCoordinates play =
-        //     List.fold (fun acc (coord, (id, (char, pv))) -> acc @ [(coord, char, pv)]) [] play
-
-        // let chars = List.fold (fun acc (coord, char, pv) -> acc @ [(char, pv)] ) [] (extractCoordinates res)
-         
-        // // V = Map ([0, fun], [0, fun], [1, fun], [2, fun])
-        // // [("C",1) , ("C",1), ("C",1)]
-        // let score =
-        //     extractCoordinates res
-        //     |> List.fold
-        //         (fun acc (coord, char, pv) ->
-        //             match state.board.squares coord with
-        //             | Some v -> Map.fold (fun acc x operation -> (operation chars) + acc) 0 v
-        //             // | Some v -> acc @ [ v  ]
-        //             | _ -> acc
-        //         ) 0
-
-        // printfn "123"
-        
-
-        // res -> extract coordinates -> input into state.gameState -> get squareProg
-        // state.gameState.squareProg
-        // [[(0, sls)],........[ ]
-
-        // Q I N
-
-        res
-
-    // // type square2 = (int * stmnt) list
-
-    // let calculatePoints2 (slist: list<squareProg>) (word: Eval.word) =
-    //     slist
-    //         |> List.mapi (fun i elem -> elem |> List.map(fun el -> (fst(el), Eval.stmntToSquareFun (snd(el)) word i)))
-    //         |> List.fold( List.append ) []
-    //         |> List.sortBy(fun el -> fst(el))
-    //         |> List.map(fun elem -> snd(elem))
-    //         |> List.fold ( >> ) id 
-    //         <| 0
+        List.fold
+            (fun acc currentPlay ->
+                match playScore currentPlay with
+                | x when x > playScore acc -> currentPlay
+                | _ -> acc)
+            []
+            plays
